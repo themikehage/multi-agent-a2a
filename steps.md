@@ -16,8 +16,8 @@
 - [x] Update `env.sample` for Qwen/DashScope
 - [x] Add health check endpoint to `common/a2a/server.py`
 - [x] Update `web_ui/app.py` to bind `0.0.0.0`
-- [ ] Build and test Docker image locally
-- [ ] Deploy to Coolify
+- [x] Build and test Docker image locally
+- [x] Deploy to Coolify
 
 ## Phase 3: Error Handling (Next Iteration)
 - [ ] Circuit breaker pattern in Host Agent

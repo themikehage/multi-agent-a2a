@@ -45,14 +45,22 @@ docker run -p 7860:7860 --env-file .env.qwen a2a-multi-agent
 ### Platform
 - **Service:** Coolify
 - **Deployment type:** Single-container Docker with supervisord
-- **Public URL:** Configurable (web-ui on port 7860)
+- **Public URL:** https://vpbf1cwtknu5720a3dosrxez.pages.therry.dev
+- **Web UI:** Gradio (port 7860)
 
 ### Environment Variables (required)
 - `DASHSCOPE_API_KEY` — Qwen API key
 - `MODEL_NAME` — Model name (default: qwen3.7-plus)
 - `MODEL_BASE_URL` — API endpoint (default: https://dashscope-intl.aliyuncs.com/compatible-mode/v1)
 
+### Deploy Commands
+```bash
+# Redeploy
+curl -X POST "https://pages.therry.dev/api/v1/deploy?uuid=vpbf1cwtknu5720a3dosrxez&force=true" \
+  -H "Authorization: Bearer $COOLIFY_API_KEY"
+```
+
 ### Considerations
-- Health check: `/health` endpoint on each agent
+- Health check: `/health` endpoint on each agent (internal only)
 - Supervisord autorestart handles agent failures
 - All agents in single container (ports 8000-8003 internal, 7860 public)
