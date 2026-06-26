@@ -54,9 +54,9 @@ def main():
     args = parse_args()
     
     # Get API keys and model configuration from environment
-    model_api_key = os.getenv("MODEL_API_KEY")
-    model_base_url = args.base_url or os.getenv("MODEL_BASE_URL")
-    model_name = args.model or os.getenv("MODEL_NAME", "gpt-4-turbo")
+    model_api_key = os.getenv("MODEL_API_KEY") or os.getenv("DASHSCOPE_API_KEY")
+    model_base_url = args.base_url or os.getenv("MODEL_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1")
+    model_name = args.model or os.getenv("MODEL_NAME", "qwen3.7-plus")
     
     # Get agent-specific model names from environment
     data_agent_model = args.model or os.getenv("DATA_AGENT_MODEL", model_name)

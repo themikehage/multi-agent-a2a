@@ -45,6 +45,14 @@ class A2ABaseServer(ABC):
     
     def _register_routes(self):
         """Register routes for the A2A server."""
+
+        @self.app.get("/health")
+        async def health_check():
+            return {
+                "status": "healthy",
+                "agent": self.agent_card.name,
+                "tasks_pending": len(self.tasks)
+            }
         
         # AgentCard discovery
         @self.app.get("/.well-known/agent.json")

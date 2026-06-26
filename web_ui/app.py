@@ -267,13 +267,14 @@ class A2AWebUI:
                 return artifact
         return {}
     
-    def run(self, port: int = 7860):
+    def run(self, host: str = "0.0.0.0", port: int = 7860):
         """Run the web interface.
         
         Args:
+            host: Host to bind to
             port: Port to run the server on
         """
-        self.interface.launch(server_port=port)
+        self.interface.launch(server_name=host, server_port=port)
 
 
 def main():
