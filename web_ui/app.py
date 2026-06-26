@@ -1,7 +1,6 @@
 """
 Gradio web interface for the A2A multi-agent system.
 """
-import asyncio
 import json
 import os
 from typing import Dict, List, Any, Tuple
@@ -116,8 +115,8 @@ class A2AWebUI:
         
         return interface
     
-    async def _discover_agents_async(self) -> Tuple[Dict[str, Any], Dict[str, str]]:
-        """Discover available agents asynchronously.
+    async def _discover_agents(self) -> Tuple[Dict[str, Any], Dict[str, str]]:
+        """Discover available agents.
         
         Returns:
             Tuple of (agent info, agent status)
@@ -143,85 +142,7 @@ class A2AWebUI:
         
         return agent_info, agent_status
     
-    def _discover_agents(self) -> Tuple[Dict[str, Any], Dict[str, str]]:
-        """Discover available agents.
-        
-        Returns:
-            Tuple of (agent info, agent status)
-        """
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(self._discover_agents_async())
-        loop.close()
-        return result
-    
-    async def _submit_task_async(
-        self, 
-        prompt: str, 
-        file_data: Any, 
-        direct_agent: str
-    ) -> Tuple[str, str, List[Dict[str, Any]], Dict[str, Any]]:
-        """Submit a task to an agent asynchronously.
-        
-        Args:
-            prompt: User prompt
-            file_data: Uploaded file data
-            direct_agent: Agent to send the task to
-            
-        Returns:
-            Tuple of (status, response, artifacts, task data)
-        """
-        # Determine the agent URL to use
-        if direct_agent == "Data Analysis":
-            agent_url = self.data_agent_url
-        elif direct_agent == "Planning":
-            agent_url = self.planning_agent_url
-        elif direct_agent == "Creative":
-            agent_url = self.creative_agent_url
-        else:
-            # Default to host agent
-            agent_url = self.host_agent_url
-        
-        try:
-            # Send task to agent
-            task = await self.client.send_task(agent_url, prompt)
-            
-            # Subscribe to task updates (for streaming)
-            updates = []
-            async for update in self.client.subscribe_to_task(agent_url, task.id):
-                updates.append(update)
-            
-            # Get final result
-            final_task = updates[-1] if updates else task
-            
-            # Extract response text
-            response_text = "No response"
-            if (final_task.status.message and 
-                final_task.status.message.parts):
-                for part in final_task.status.message.parts:
-                    if hasattr(part, 'text'):
-                        response_text = part.text
-                        break
-            
-            # Extract artifacts
-            artifacts = [
-                {
-                    "id": artifact.id,
-                    "type": artifact.type,
-                    "name": artifact.name,
-                    "description": artifact.description
-                }
-                for artifact in final_task.artifacts
-            ]
-            
-            # Return results
-            status = f"Task {final_task.status.state}"
-            return (status, response_text, artifacts, final_task.model_dump())
-            
-        except Exception as e:
-            return (f"Error: {str(e)}", "Failed to process request", [], {})
-    
-    def _handle_submit(
+    async def _handle_submit(
         self, 
         prompt: str, 
         file_data: Any, 
@@ -238,15 +159,50 @@ class A2AWebUI:
             Tuple of (status, response, artifacts, task data)
         """
         if not prompt:
-            return "Error: No prompt provided", "Please enter a request", [], {}
+            return "Error: No prompt provided", "Please enter a request", [], []
+        
+        # Determine the agent URL to use
+        if direct_agent == "Data Analysis":
+            agent_url = self.data_agent_url
+        elif direct_agent == "Planning":
+            agent_url = self.planning_agent_url
+        elif direct_agent == "Creative":
+            agent_url = self.creative_agent_url
+        else:
+            agent_url = self.host_agent_url
+        
+        try:
+            task = await self.client.send_task(agent_url, prompt)
             
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(
-            self._submit_task_async(prompt, file_data, direct_agent)
-        )
-        loop.close()
-        return result
+            updates = []
+            async for update in self.client.subscribe_to_task(agent_url, task.id):
+                updates.append(update)
+            
+            final_task = updates[-1] if updates else task
+            
+            response_text = "No response"
+            if (final_task.status.message and
+                final_task.status.message.parts):
+                for part in final_task.status.message.parts:
+                    if hasattr(part, 'text'):
+                        response_text = part.text
+                        break
+            
+            artifacts = [
+                {
+                    "id": artifact.id,
+                    "type": artifact.type,
+                    "name": artifact.name,
+                    "description": artifact.description
+                }
+                for artifact in final_task.artifacts
+            ]
+            
+            status = f"Task {final_task.status.state}"
+            return (status, response_text, artifacts, final_task.model_dump())
+            
+        except Exception as e:
+            return (f"Error: {str(e)}", "Failed to process request", [], {})
     
     def _select_artifact(
         self, 
