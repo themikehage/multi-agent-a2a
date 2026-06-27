@@ -1,7 +1,8 @@
 FROM node:22-alpine AS frontend-build
 WORKDIR /app
-COPY frontend/package.json frontend/pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile --ignore-scripts \
+    && cd /app/node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild && node install.js
 COPY frontend/ .
 RUN pnpm run build
 
