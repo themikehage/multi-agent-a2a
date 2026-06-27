@@ -19,6 +19,22 @@
 - [x] Build and test Docker image locally
 - [x] Deploy to Coolify
 
+## Phase 3: React Frontend (Replaces Gradio)
+- [x] Create `frontend/` subdirectory with Vite + React + TypeScript + Tailwind
+- [x] TypeScript types matching A2A protocol
+- [x] API service layer with retry logic and circuit breaker
+- [x] WebSocket client for task streaming with timeout
+- [x] UI components: Button, Card, StatusBadge, Toast, ErrorBoundary
+- [x] Layout: Header, responsive Sidebar, main content area
+- [x] Chat interface with message streaming and file upload
+- [x] Agent status panel with real-time discovery and pulsing indicators
+- [x] Artifact viewer with type-specific rendering
+- [x] Error handling: toast notifications, circuit breaker, inline retry
+- [x] Loading skeletons, reduced-motion support, responsive design
+- [x] nginx config for serving frontend and proxying API/WebSocket
+- [x] Docker multi-stage build (Node frontend + Python agents)
+- [x] supervisord.conf updated (nginx replaces Gradio)
+
 ## Phase 3: Error Handling (Next Iteration)
 - [ ] Circuit breaker pattern in Host Agent
 - [ ] Retry with exponential backoff in A2AClient

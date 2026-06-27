@@ -1,8 +1,16 @@
+FROM node:20-alpine AS frontend-build
+WORKDIR /app
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+COPY frontend/ .
+RUN pnpm run build
+
 FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y \
     supervisor \
     curl \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -14,6 +22,10 @@ COPY . .
 COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
+
+COPY --from=frontend-build /app/dist /usr/share/nginx/html
+COPY frontend/nginx.conf /etc/nginx/conf.d/a2a.conf
+RUN rm -f /etc/nginx/sites-enabled/default
 
 EXPOSE 7860
 
